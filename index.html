@@ -50,6 +50,7 @@
       display: flex;
       flex-direction: column;
       background: var(--chat-bg);
+      position: relative; /* Container context for floating elements */
     }
 
     .chat-header {
@@ -60,6 +61,7 @@
       justify-content: space-between;
       padding: 0 16px;
       border-bottom: 1px solid var(--border-color);
+      z-index: 2;
     }
 
     .chat-header-left {
@@ -99,7 +101,7 @@
     /* Messages Area */
     .messages-area {
       flex: 1;
-      padding: 20px;
+      padding: 20px 20px 90px 20px; /* Extra bottom padding so messages aren't obscured by floating bar */
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -136,22 +138,32 @@
       font-weight: bold;
     }
 
-    /* Input Area */
+    /* Floating Input Area */
     .input-area {
-      min-height: 62px;
-      background: var(--panel-header);
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 40px);
+      max-width: 800px;
+      height: 56px;
+      background: #ffffff;
       display: flex;
       align-items: center;
-      padding: 10px 16px;
+      padding: 8px 12px;
       gap: 10px;
+      border-radius: 28px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      border: 1px solid var(--border-color);
+      z-index: 10;
     }
 
     .input-area input[type="text"] {
       flex: 1;
-      height: 40px;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 0 12px;
+      height: 100%;
+      border: none;
+      background: transparent;
+      padding: 0 8px;
       font-size: 15px;
       outline: none;
     }
@@ -166,7 +178,7 @@
       justify-content: center;
       color: var(--text-muted);
       border-radius: 50%;
-      transition: background 0.2s;
+      transition: background 0.2s, transform 0.1s;
     }
 
     .btn:hover {
@@ -176,6 +188,9 @@
     .btn-send {
       background-color: var(--primary);
       color: #fff;
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
     }
 
     .btn-send:hover {
@@ -227,7 +242,7 @@
       <!-- Sent messages will render here -->
     </div>
 
-    <!-- Input Bar -->
+    <!-- Floating Input Bar -->
     <div class="input-area">
       <label for="image-input" class="btn" title="Attach Image">
         📎
@@ -312,18 +327,15 @@
       status: '✓'
     };
 
-    // Render message on screen
     const msgDiv = renderMessageDOM(messageObj);
     saveMessageToStorage(messageObj);
     scrollToBottom();
 
-    // Simulate delivery check indicator and update local storage status
     setTimeout(() => {
       messageObj.status = '✓✓';
       const statusIcon = msgDiv.querySelector('.status-icon');
       if (statusIcon) statusIcon.textContent = '✓✓';
 
-      // Update in storage
       const messages = getSavedMessages();
       const targetIndex = messages.findIndex(m => m.id === messageObj.id);
       if (targetIndex !== -1) {
@@ -341,17 +353,14 @@
     }
   }
 
-  // Handle Enter keypress
   messageInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
       handleSend();
     }
   });
 
-  // Handle Send button click
   sendBtn.addEventListener('click', handleSend);
 
-  // Handle image attachment
   imageInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -364,7 +373,6 @@
     }
   });
 
-  // Clear chat functionality
   clearBtn.addEventListener('click', () => {
     if (confirm('Are you sure you want to clear all stored chat messages?')) {
       localStorage.removeItem(STORAGE_KEY);
